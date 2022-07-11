@@ -16,6 +16,7 @@ public class Title : MonoBehaviour
         Debug.Log("Press Start!");
         if (!firstpush)
         {
+            GameManager.instance.PlaySE(startSE);
             fade.StartFadeOut();
 
             firstpush = true;

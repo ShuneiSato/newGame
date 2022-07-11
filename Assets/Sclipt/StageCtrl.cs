@@ -11,6 +11,9 @@ public class StageCtrl : MonoBehaviour
     [Header("フェード")] public Fadeimage fade;
     [Header("ゲームオーバー時のSE")] public AudioClip gameOverSE;
     [Header("リトライ時のSE")] public AudioClip retrySE;
+    [Header("ステージクリアSE")] public AudioClip stageClearSE;
+    [Header("ステージクリア")] public GameObject stageClearOb;
+    [Header("ステージクリア判定")] public PlayerTriggerCheck stageClearTrigger;
 
 
 
@@ -20,6 +23,7 @@ public class StageCtrl : MonoBehaviour
     private bool doGameOver = false;
     private bool retryGame = false;
     private bool doSceneChange = false;
+    private bool doClear = false;
 
     // Start is called before the first frame update
     void Start()
@@ -27,6 +31,7 @@ public class StageCtrl : MonoBehaviour
         if (playerOb != null && continuePoint != null && continuePoint.Length > 0 && gameOverOb != null && fade != null)
         {
             gameOverOb.SetActive(false);
+            stageClearOb.SetActive(false);
             playerOb.transform.position = continuePoint[0].transform.position;
 
             p = playerOb.GetComponent<PlayerControler>();
@@ -50,8 +55,8 @@ public class StageCtrl : MonoBehaviour
             GameManager.instance.PlaySE(gameOverSE);
             doGameOver = true;
         }
-       if (p != null && p.IsContinueWaiting() && !doGameOver)
-       {
+        else if (p != null && p.IsContinueWaiting() && !doGameOver)
+        {
             if (continuePoint.Length > GameManager.instance.continueNum)
             {
                 playerOb.transform.position = continuePoint[GameManager.instance.continueNum].transform.position;
@@ -61,6 +66,11 @@ public class StageCtrl : MonoBehaviour
             {
                 Debug.Log("コンティニューポイントの設定数が足りてない！");
             }
+        }
+        else if (stageClearTrigger != null && stageClearTrigger.isOn && !doGameOver && !doClear)
+        {
+            StageClear();
+            doClear = true;
         }
         //ステージを切り替える
         if (fade != null && startFade && !doSceneChange)
@@ -75,13 +85,14 @@ public class StageCtrl : MonoBehaviour
                 {
                     GameManager.instance.stageNum = nextStageNum;
                 }
+                GameManager.instance.isStageClear = false;
                 SceneManager.LoadScene("stage" + nextStageNum);
                 doSceneChange = true;
             }
         }
     }
 
-    
+
 
     /// <summary>
     /// 最初のステージに戻る
@@ -107,5 +118,13 @@ public class StageCtrl : MonoBehaviour
         }
     }
 
-   
+    /// <summary>
+    /// ステージクリア時
+    /// </summary>
+    public void StageClear()
+    {
+        GameManager.instance.isStageClear = true;
+        stageClearOb.SetActive(true);
+        GameManager.instance.PlaySE(stageClearSE);
+    }
 }

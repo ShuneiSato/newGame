@@ -12,6 +12,7 @@ public class Enemy_zako1 : MonoBehaviour
     [Header("掴みコライダー")] public Grab grabSencer;
     [Header("接触判定")] public EnemyCollisionCheck checkCollision;
     [Header("ダメージ時SE")] public AudioClip damegeSE;
+    [Header("死亡判定")]public bool isDead = false;
     #endregion
 
     #region//プライベート変数
@@ -21,7 +22,7 @@ public class Enemy_zako1 : MonoBehaviour
     private ObjectCollision oc = null;
     private BoxCollider2D col = null;
     private bool rightTleftF = false;
-    private bool isDead = false;
+    
     private bool gSencer = false;
     #endregion
     // Start is called before the first frame update
@@ -84,10 +85,6 @@ public class Enemy_zako1 : MonoBehaviour
                     transform.Rotate(new Vector3(0, 0, -30));
                 }
         }
-        if (grabSencer.isGrab)
-        {
-
-        }
     }
 
     public void Grab()
@@ -109,6 +106,30 @@ public class Enemy_zako1 : MonoBehaviour
         else
         {
             transform.Rotate(new Vector3(0, 0, -30));
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Ball")
+        {
+            if (!isDead)
+            {
+                if (GameManager.instance != null)
+                {
+                    GameManager.instance.PlaySE(damegeSE);
+                    GameManager.instance.score += myScore;
+                }
+                anim.Play("Enemy_zako_dead");
+                rb.velocity = new Vector2(0, -gravity);
+                isDead = true;
+                gameObject.tag = "Dead";
+                Destroy(gameObject, 0.3f);
+            }
+            else
+            {
+                transform.Rotate(new Vector3(0, 0, -30));
+            }
         }
     }
 }

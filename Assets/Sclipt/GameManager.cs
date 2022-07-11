@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     [Header("現在の残機")] public int lifeNum;
     [Header("デフォルトの残機")] public int defaultHeartNum;
     [HideInInspector] public bool isGameOver;
+    [HideInInspector] public bool isStageClear;
 
     private AudioSource audioSource = null;
 

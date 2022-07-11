@@ -12,13 +12,16 @@ public class PlayerControler : MonoBehaviour
     [Header("ジャンプ制限")] public float jumpLimitTime;//ジャンプ制限時間
     [Header("踏みつけ判定の高さの割合")] public float stepOnRate;
     [Header("掴みコライダー")] public Grab grabSencer;
+    [Header("敵のスクリプト")] public Enemy_zako1 zako1;
     [Header("設置判定")] public GroundSencer ground;//設置判定
     [Header("頭をぶつけた判定")] public GroundSencer head;//頭をぶつけた判定
     [Header("ダッシュスピード処理")] public AnimationCurve dushCurve;
     [Header("ジャンプスピード処理")] public AnimationCurve jumpCurve;
+    [Header("投げる時のSE")] public AudioClip throwSE;
     [Header("ジャンプする時のSE")] public AudioClip jumpSE;
     [Header("やられた時のSE")] public AudioClip downSE;
     [Header("復帰時のSE")] public AudioClip continueSE;
+    public GameObject Ball;
     #endregion
 
     [SerializeField] private BoxCollider2D grabcollision;
@@ -37,6 +40,7 @@ public class PlayerControler : MonoBehaviour
     private bool isOtherJump = false;
     private bool isContinue = false;
     private bool nonDownAnim = false;
+    private bool isClearMotion = false;
     private bool gSencer = false;
     private float continueTime = 0.0f;
     private float blinkTime = 0.0f;
@@ -45,25 +49,36 @@ public class PlayerControler : MonoBehaviour
     private float jumpTime = 0.0f;
     private float dashTime = 0.0f;
     private float beforeKey = 0.0f;
+    private float Speed;
     private string enemyTag = "Enemy";
     private string deadAreaTag = "DeadArea";
     private string moveFloorTag = "MoveFloor";
     private string fallFloorTag = "FallFloor";
+    private GameObject obj;
+    private GameObject Player;
+    private Transform player;
 
     #endregion
 
     [SerializeField] StageCtrl _stageCtrl;
 
-    // Start is called before the first frame update
+    
     void Start()
     {
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         capcol = GetComponent<CapsuleCollider2D>();
         sr = GetComponent<SpriteRenderer>();
-        gSencer = GetComponent<Grab>(); 
+        gSencer = GetComponent<Grab>();
+
+        player = GameObject.Find("Player").transform;
+        Player = GameObject.Find("Player");
+        Speed = 10.0f;
     }
 
+    /// <summary>
+    /// 移動、掴み投げ
+    /// </summary>
     private void Update()
     {
         if (isContinue)
@@ -95,13 +110,51 @@ public class PlayerControler : MonoBehaviour
             continueTime += Time.deltaTime;
         }
 
-
-
+        //掴み
         if (Input.GetButton("Fire1"))
         {
             StartCoroutine(grab());
+            anim.SetBool("grab", true);
+            anim.SetBool("throwend", false);
+
+            if (zako1.isDead && !obj && grabSencer.isGrab)
+            {
+                obj = (GameObject)Instantiate(Ball, transform.position, Quaternion.identity);
+                obj.transform.parent = Player.transform;
+                obj.transform.localPosition = new Vector3(-2, 1, 0);
+                grabSencer.isGrab = false;
+            }
+        }
+
+        //投げ
+        if (Input.GetButtonDown("Fire2"))
+        {
+            anim.SetBool("throw", true);
+            GameManager.instance.PlaySE(throwSE);
+        }
+
+        if (anim != null)
+        {
+            AnimatorStateInfo currentState = anim.GetCurrentAnimatorStateInfo(0);
+            if (currentState.IsName("grab"))
+            {
+                if (currentState.normalizedTime >= 0.9)
+                {
+                    anim.SetBool("throw_stand", true);
+
+                }
+            }
+        }
+
+   
+        if (!obj)
+        {
+            anim.SetBool("grab", false);
+            anim.SetBool("noball", true);
         }
     }
+
+    //掴み判定の長さ
     private IEnumerator grab()
     {
         grabcollision.gameObject.SetActive(true);
@@ -112,7 +165,7 @@ public class PlayerControler : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (!isDown && !GameManager.instance.isGameOver)
+        if (!isDown && !GameManager.instance.isGameOver && !GameManager.instance.isStageClear)
         {
             isGround = ground.IsGround();
             isHead = head.IsGround();
@@ -134,6 +187,11 @@ public class PlayerControler : MonoBehaviour
         }
         else
         {
+            if (!isClearMotion && GameManager.instance.isStageClear)
+            {
+                anim.Play("Clear");
+                isClearMotion = true;
+            }
             rb.velocity = new Vector2(0, -gravity);
         }
 
@@ -318,7 +376,7 @@ public class PlayerControler : MonoBehaviour
 
     private void ReceiveDamage(bool downAnim)
     {
-        if (isDown)
+        if (isDown || GameManager.instance.isStageClear)
         {
             return;
         }
@@ -338,6 +396,13 @@ public class PlayerControler : MonoBehaviour
 
         }
     }
+
+    public void ThrowAnimEnd()
+    {
+        anim.SetBool("throwend", true);
+        anim.SetBool("throw", false);
+    }
+
     #region
     private void OnCollisionEnter2D(Collision2D collision)
     {

@@ -15,6 +15,7 @@ TagManager:
   - Grabing
   - Grab
   - Dead
+  - Ball
   layers:
   - Default
   - TransparentFX
