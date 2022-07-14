@@ -2,23 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ScoreItem : MonoBehaviour
+public class ScoreItem : ItemBase2D
 {
-    [Header("加算するスコア")] public int myScore;
-    [Header("プレイヤーの判定")] public PlayerTriggerCheck playerCheck;
-    [Header("取得時のSE")] public AudioClip getSE;
-
-    // Update is called once per frame
-    void Update()
+    [SerializeField, Header("加算スコア")] int _score = 10;
+    /// <summary>
+    /// スコア取得時の加算
+    /// </summary>
+    public override void Activate()
     {
-        if (playerCheck.isOn) //プレイヤーが判定に入ったら
-        {
-            if (GameManager.instance != null)
-            {
-                GameManager.instance.PlaySE(getSE);
-                GameManager.instance.score += myScore;
-                Destroy(this.gameObject);
-            }
-        }
+        FindObjectOfType<GameManager>().AddScoreNum(_score);
     }
 }

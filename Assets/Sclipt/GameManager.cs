@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour
 
     private AudioSource audioSource = null;
 
+    int _score = 0;
+
     private void Awake()
     {
         if (instance == null)
@@ -56,6 +58,14 @@ public class GameManager : MonoBehaviour
         else
         {
             isGameOver = true;
+        }
+    }
+
+    public void AddScoreNum(int _score)
+    {
+        if (instance != null)
+        {
+             ++score;
         }
     }
 

@@ -2,19 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HeartItem : ScoreItem
+public class HeartItem : ItemBase2D
 {
-    [Header("加算するライフ")] public int myLife;
-    void Update()
+    [SerializeField, Header("加算するライフ")] int _myLife = 1;
+
+    public override void Activate()
     {
-        if (playerCheck.isOn) //プレイヤーが判定に入ったら
-        {
-            if (GameManager.instance != null)
-            {
-                GameManager.instance.PlaySE(getSE);
-                GameManager.instance.lifeNum += myLife;
-                Destroy(this.gameObject);
-            }
-        }
+        FindObjectOfType<GameManager>().AddLifeNum();
     }
 }
