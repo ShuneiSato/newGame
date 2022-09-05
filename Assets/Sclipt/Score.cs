@@ -3,32 +3,39 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using DG.Tweening;
 
 public class Score : MonoBehaviour
 {
-    private TextMeshProUGUI scoreText = null;
-    private int oldscore = 0;
+    [SerializeField] float _scoreChangeInterval = 1.0f;
+    private TextMeshProUGUI scoreText = default;
+    int _maxScore = 9999;
+    private int _score = 0;
 
     void Start()
     {
         scoreText = GetComponent<TextMeshProUGUI>();
-        if (GameManager.instance != null)
-        {
-            scoreText.text = "Score " + GameManager.instance.score;
-        }
-        else
-        {
-            Debug.Log("ゲームマネージャー設置し忘れ");
-            Destroy(this);
-        }
     }
 
-    void Update()
+    /// <summary>
+    /// スコア加算の処理
+    /// 各所で呼び出しするとき加算量を調整する
+    /// </summary>
+    /// <param name="score"></param>
+    public void AddScore(int score)
     {
-        if (oldscore != GameManager.instance.score)
-        {
-            scoreText.text = "Score " + GameManager.instance.score;
-            oldscore = GameManager.instance.score;
-        }
+        int tempScore = _score;
+        _score = Mathf.Min(_score + score, _maxScore);
+        Debug.Log("呼び出された");
+
+        DOTween.To(() => tempScore,
+            x =>
+            {
+                tempScore = x;
+                scoreText.text = tempScore.ToString("0000");
+            },
+            _score,
+            _scoreChangeInterval).
+            OnComplete(() => scoreText.text = _score.ToString("0000"));
     }
 }

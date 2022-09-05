@@ -21,6 +21,7 @@ public class Enemy_zako1 : MonoBehaviour
     private Animator anim = null;
     private ObjectCollision oc = null;
     private BoxCollider2D col = null;
+    Score _pScore = default;
     private bool rightTleftF = false;
     
     private bool gSencer = false;
@@ -34,7 +35,7 @@ public class Enemy_zako1 : MonoBehaviour
         oc = GetComponent<ObjectCollision>();
         col = GetComponent<BoxCollider2D>();
         gSencer = GetComponent<Grab>();
-
+        _pScore = GameObject.FindObjectOfType<Score>();
     }
 
     // Update is called once per frame
@@ -70,11 +71,7 @@ public class Enemy_zako1 : MonoBehaviour
             Debug.Log("踏んだ");
                 if (!isDead)
                 {
-                    if (GameManager.instance != null)
-                    {
-                        GameManager.instance.PlaySE(damegeSE);
-                        GameManager.instance.score += myScore;
-                    }
+                    _pScore.AddScore(10);
                     anim.Play("Enemy_zako_dead");
                     rb.velocity = new Vector2(0, -gravity);
                     isDead = true;
@@ -92,11 +89,7 @@ public class Enemy_zako1 : MonoBehaviour
         Debug.Log("判定入った");
         if (!isDead)
         {
-            if (GameManager.instance != null)
-            {
-                GameManager.instance.PlaySE(damegeSE);
-                GameManager.instance.score += myScore;
-            }
+            _pScore.AddScore(10);
             anim.Play("Enemy_zako_dead");
             rb.velocity = new Vector2(0, -gravity);
             isDead = true;
@@ -115,11 +108,7 @@ public class Enemy_zako1 : MonoBehaviour
         {
             if (!isDead)
             {
-                if (GameManager.instance != null)
-                {
-                    GameManager.instance.PlaySE(damegeSE);
-                    GameManager.instance.score += myScore;
-                }
+                _pScore.AddScore(10);
                 anim.Play("Enemy_zako_dead");
                 rb.velocity = new Vector2(0, -gravity);
                 isDead = true;

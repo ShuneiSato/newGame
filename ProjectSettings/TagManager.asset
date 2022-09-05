@@ -16,6 +16,7 @@ TagManager:
   - Grab
   - Dead
   - Ball
+  - Asobi
   layers:
   - Default
   - TransparentFX
